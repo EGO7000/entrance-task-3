@@ -12,7 +12,19 @@ importScripts('../vendor/kv-keeper.js-1.0.4/kv-keeper.js');
 self.addEventListener('install', event => {
     const promise = preCacheAllFavorites()
         // Вопрос №1: зачем нужен этот вызов?
-        .then(() => self.skipWaiting())
+        // Ответ: skipWaiting вызовет activate немедленно.
+        /* Развёрнутый ответ:
+            Согласно документации сервис-воркер начинает работать внутри ServiceWorkerGlobalScope.
+            Событие install всегда посылается первым воркеру,
+            а self по идее ссылается на ServiceWorkerGlobalScope,
+            Соответственно, promise, вызванный в waitUntil(), гарантирует,
+            что сервис-воркер не будет установлен, если код, переданый в нее,
+            не завершится успешно.
+            После успешного вызова preCacheAllFavorites() по цепочке
+            выполнится стрелочная функция skipWaiting() и затем console.log();
+            Вызов skipWaiting() заставляет сервис-воркер перейти к с событыию activate.
+        */
+          .then(() => self.skipWaiting())
         .then(() => console.log('[ServiceWorker] Installed!'));
 
     event.waitUntil(promise);
@@ -22,6 +34,22 @@ self.addEventListener('activate', event => {
     const promise = deleteObsoleteCaches()
         .then(() => {
             // Вопрос №2: зачем нужен этот вызов?
+            // Ответ: Вызов self.clients.claim включит сервис-воркер немедленно
+            //        на всех страницах в его зоне действия.
+            /* Развёрнутый ответ (из документации):
+                Метод claim() интерфейса Clients позволяет активному сервис воркеру
+                установить себя как активного воркера для клиентской страницы,
+                когда воркер и страница находятся в одной области.
+                Он запускает событие oncontrollerchange на всех клиентских страницах
+                в пределах области сервис воркера.
+                Этот метод может быть использован вместе с  ServiceWorkerGlobalScope.skipWaiting(),
+                чтобы убедиться, что обновление соответствующего сервис воркера возымело эффект сразу же
+                как на текущего клиента, так и на всех других активных клинетов.
+                ---
+                В данном случае, использование claim() внутри обработчика события onActivate сервис воркера,
+                поэтому клиентская страница, загруженая в той же области, не нуждается в перезагрузке
+                прежде чем она может быть использована сервис воркером.
+            */
             self.clients.claim();
 
             console.log('[ServiceWorker] Activated!');
@@ -34,6 +62,10 @@ self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
     // Вопрос №3: для всех ли случаев подойдёт такое построение ключа?
+    // Ответ:
+    /* Развёрнутый ответ:
+
+    */
     const cacheKey = url.origin + url.pathname;
 
     let response;
@@ -113,6 +145,14 @@ function deleteObsoleteCaches() {
     return caches.keys()
         .then(names => {
             // Вопрос №4: зачем нужна эта цепочка вызовов?
+            // Ответ: При событии onActivate первым идёт вызов функции
+            //        deleteObsoleteCaches(), которая удаляет устаревший кэш.
+            /* Развёрнутый ответ:
+                Создаётся массив names, в который записывются все name !== CACHE_VERSION,
+                т.е. если мы изменим в самом начале константу CACHE_VERSION на новую,
+                после того как мы сделаем UNREGISTER для текущего service-worker.js,
+                весь кэш будет считаться устаревшим и удалится.
+            */
             return Promise.all(
                 names.filter(name => name !== CACHE_VERSION)
                     .map(name => {
