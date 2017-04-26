@@ -22,7 +22,13 @@
     <body class="page page_theme_islands i-bem" data-bem='{"page":{}}'>
         <!-- Шапка страницы -->
         <div class="header">
-            <div class="header__item header__logo">Мобилизация.Гифки</div>
+            <style>
+                .header__logo a, .header__logo a:visited, .header__logo a:focus, a:hover {
+                    text-decoration: none;
+                    color: inherit;
+                }
+            </style>
+            <div class="header__item header__logo"><a href="gifs.html">Мобилизация.Гифки</a></div>
 
             <form class="header__item header__search search i-bem" data-bem='{"search":{}}'>
                 <div class="search__col search__col_type_input">

@@ -466,7 +466,7 @@ modules.define('service-worker', ['i-bem'], function(provide, bem) {
             }
 
             this._serviceWorker
-                .register('../service-worker.js', {scope: '/'}) // зрим к корень :)
+                .register('/service-worker.js', {scope: '/'}) // зрим к корень :)
                 .then(function() {
                     console.log('[ServiceWorkerContainer] ServiceWorker is registered!');
                 })
