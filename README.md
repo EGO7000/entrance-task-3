@@ -41,7 +41,7 @@ DOMException: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).`
 
 Использовать http-заголовок *Service-Worker-Allowed* не вариант, т.к. мы работаем локально,
 но если бы был HTTPS, то для файла service-worker.js серверу нужно отдавать доп.заголовок,
-а в вызов исправить на `.register('/asstes/service-worker.js', {'/'})`
+а в вызов исправить на `.register('/asstes/service-worker.js', {scope: '/'})`
 
 **Решение**: переместим service-worker.js в корень сайта и изменим путь вызова в **blocks.js**.
 
