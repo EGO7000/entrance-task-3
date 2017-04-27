@@ -6,7 +6,7 @@
 
 const CACHE_VERSION = '1.0.0-broken';
 
-importScripts('../vendor/kv-keeper.js-1.0.4/kv-keeper.js');
+importScripts('./vendor/kv-keeper.js-1.0.4/kv-keeper.js');
 
 
 self.addEventListener('install', event => {
